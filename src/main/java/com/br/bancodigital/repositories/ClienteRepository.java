@@ -7,6 +7,7 @@ import com.br.bancodigital.models.Cliente;
 
 @Repository
 public interface ClienteRepository extends JpaRepository<Cliente, Long> {
-
+	
+	boolean existsByCpf(String cpf);
 
 }
