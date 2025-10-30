@@ -11,6 +11,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -40,11 +41,29 @@ public class Cliente {
 	private String nome;
 	
 	@Column(length = 200, nullable = false) 
+	
+	@Pattern(
+		        regexp = "\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}",
+		        message = "O CPF deve estar no formato XXX.XXX.XXX-XX"
+	)   
 	private String cpf;
 	
+	@Column(name = "DATA_NASC", nullable = false)
 	@JsonFormat(pattern = "dd/MM/yyyy")
-	@Column(nullable = false)
-	private LocalDate data_nasce;
 	
+	private LocalDate dataNasce;
+	
+	
+	@Column( nullable = false)
+	private String rua;
+	
+	@Column( nullable = false)
+	private String numero;
+	
+	@Column( nullable = false)
+	private String cidade;
+	
+	@Column( nullable = false)
+	private String estado;
 
 }
