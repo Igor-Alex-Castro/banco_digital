@@ -10,12 +10,15 @@ import javax.naming.AuthenticationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.br.bancodigital.exceptions.BadRequestException;
 import com.br.bancodigital.exceptions.BusinessException;
+import com.br.bancodigital.exceptions.ResourceNotFoundException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -33,6 +36,8 @@ public class GlobalExceptionHandler {
 						request.getRequestURI()));
 
 	}
+	
+	
 
 	// 400 Bad Request - Parâmetro inválido / @NotBlank / @NotNull
 	@ExceptionHandler(ConstraintViolationException.class)
@@ -41,6 +46,16 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.badRequest()
 				.body(Map.of("timestamp", LocalDateTime.now(), "status", HttpStatus.BAD_REQUEST, "error",
 						"Parâmetro inválido", "message", ex.getMessage(), "path", request.getRequestURI()));
+	}
+	
+	
+	
+	@ExceptionHandler(IllegalArgumentException.class)
+	public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(ConstraintViolationException ex,
+			HttpServletRequest request) {
+		return ResponseEntity.badRequest()
+				.body(Map.of("timestamp", LocalDateTime.now(), "status", HttpStatus.BAD_REQUEST, "error",
+						"Valor", "message", ex.getMessage(), "path", request.getRequestURI()));
 	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
@@ -58,15 +73,15 @@ public class GlobalExceptionHandler {
 
 	// 404 Not Found - Recurso não encontrado
 
-	/*
-	 * @ExceptionHandler(ResourceNotFoundException.class) public
-	 * ResponseEntity<Map<String, Object>>
-	 * handleResourceNodFound(ResourceNotFoundException ex, HttpServletRequest
-	 * request){ return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
-	 * "timestamp", LocalDateTime.now(), "status", HttpStatus.NOT_FOUND, "error",
-	 * "Recurso não encontrado", "message", ex.getMessage(), "path",
-	 * request.getRequestURI() )); }
-	 */
+	
+	  @ExceptionHandler(ResourceNotFoundException.class) public
+	  ResponseEntity<Map<String, Object>>
+	  handleResourceNodFound(ResourceNotFoundException ex, HttpServletRequest
+	  request){ return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+	  "timestamp", LocalDateTime.now(), "status", HttpStatus.NOT_FOUND, "error",
+	  "Recurso não encontrado", "message", ex.getMessage(), "path",
+	  request.getRequestURI() )); }
+	 
 
 	// 409 Conflict - Violação de integridade no banco
 	@ExceptionHandler(DataIntegrityViolationException.class)
@@ -88,6 +103,16 @@ public class GlobalExceptionHandler {
 
 				"timestamp", LocalDateTime.now(), "status", HttpStatus.CONFLICT, "error",
 				"Violação de regra de negócio", "message", ex.getMessage(), "path", request.getRequestURI()));
+
+	}
+	
+	@ExceptionHandler(BadRequestException.class)
+	public ResponseEntity<Map<String, Object>> handleBusinessException(BadRequestException ex,
+			HttpServletRequest request) {
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+
+				"timestamp", LocalDateTime.now(), "status", HttpStatus.BAD_REQUEST, "error",
+				"Serviço fora do ar", "message", ex.getMessage(), "path", request.getRequestURI()));
 
 	}
 
@@ -117,6 +142,20 @@ public class GlobalExceptionHandler {
 				"timestamp", LocalDateTime.now(), "status", HttpStatus.INTERNAL_SERVER_ERROR, "error", "Erro interno",
 				"message", ex.getMessage(), "path", request.getRequestURI()));
 	}
+	
+	 @ExceptionHandler(HttpMessageNotReadableException.class)
+	    public ResponseEntity<Map<String, Object>> handleInvalidFormat(HttpMessageNotReadableException ex, HttpServletRequest request) {
+		  String errorMessage = "Formato inválido. Certifique-se de enviar datas no formato dd/MM/yyyy";
+
+		    return ResponseEntity.badRequest()
+		            .body(Map.of(
+		                    "timestamp", LocalDateTime.now(),
+		                    "status", HttpStatus.BAD_REQUEST.value(),
+		                    "error", errorMessage,
+		                    "message", ex.getMessage(),
+		                    "path", request.getRequestURI()
+		            ));
+	    }
 
 	/*
 	 * Metodo para ser utilizado para construir o json da padronização private

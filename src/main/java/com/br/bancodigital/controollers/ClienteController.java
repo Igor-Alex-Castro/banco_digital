@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.br.bancodigital.dto.ApiResponse;
+import com.br.bancodigital.dto.ClienteDto;
 import com.br.bancodigital.models.Cliente;
 import com.br.bancodigital.services.ClienteService;
 
@@ -30,9 +31,9 @@ public class ClienteController {
 	}
 	
 	@PostMapping()
-	public ResponseEntity<ApiResponse<Cliente>> salvar(@RequestBody @Valid Cliente cliente){
+	public ResponseEntity<ApiResponse<Cliente>> salvar(@RequestBody @Valid ClienteDto clienteDto){
 		
-		Cliente clieteCriado = clienteService.salvar(cliente);
+		Cliente clieteCriado = clienteService.salvar(clienteDto);
 		 
 		ApiResponse<Cliente> response = new ApiResponse<>(
 				 HttpStatus.CREATED.value(),

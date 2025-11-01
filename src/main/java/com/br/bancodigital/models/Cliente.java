@@ -2,6 +2,7 @@ package com.br.bancodigital.models;
 
 import java.time.LocalDate;
 
+import com.br.bancodigital.dto.ClienteDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.persistence.Column;
@@ -39,7 +40,7 @@ public class Cliente {
 	)
 	private Long id;
 	
-	@Column(length = 200, nullable = false) 
+	@Column(length = 100, nullable = false) 
 	private String nome;
 	
 	@Column(length = 200, nullable = false) 
@@ -52,13 +53,19 @@ public class Cliente {
 	@Column( nullable = false)
 	private String rua;
 	
-	@Column( nullable = false)
+	
 	private String numero;
+	
+	
+	private String complemento;
 	
 	@Column( nullable = false)
 	private String cidade;
 	
 	@Column( nullable = false)
 	private String estado;
+
+	@Column( nullable = false)
+	private String cep;
 
 }
