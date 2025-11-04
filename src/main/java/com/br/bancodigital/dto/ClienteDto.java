@@ -2,6 +2,7 @@ package com.br.bancodigital.dto;
 
 import java.time.LocalDate;
 
+import com.br.bancodigital.enuns.TipoCliente;
 import com.br.bancodigital.models.Cliente;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -35,10 +36,24 @@ public record ClienteDto(
 		
 
 		@NotBlank(message = "O parâmetro 'numero' não pode ser vazio")
-		String numero
-
+		String numero,
+		
+		String complemento,
+		
+		@NotNull(message = "O tipo do cliente é obrigatório (COMUM, SUPER, PREMIUM )")
+		TipoCliente tipoCliente
 
 ) {
+	
+	public ClienteDto(Cliente cliente) {
+		
+		this(
+				cliente.getNome(), cliente.getCpf() ,
+				cliente.getDataNasce(), cliente.getCep(), cliente.getNumero(),
+				cliente.getComplemento(),cliente.getTipoCliente()
+
+		);
+	}
 	
 	public Cliente toEntity() {
         Cliente cliente = new Cliente();
