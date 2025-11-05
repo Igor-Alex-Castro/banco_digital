@@ -64,28 +64,28 @@ public class ClienteController {
 	}
 	
 	@GetMapping("/{id}")
-	public ResponseEntity<ApiResponse<Cliente>> buscarPorId(@PathVariable @NotNull(message = "O ID do cliente é obrigatório") Long id){
+	public ResponseEntity<ApiResponse<ClienteDto>> buscarPorId(@PathVariable @NotNull(message = "O ID do cliente é obrigatório") Long id){
 		
 		Cliente cliente = clienteService.buscarPorId(id);
 		
-		ApiResponse<Cliente> response = new ApiResponse<>(
+		ApiResponse<ClienteDto> response = new ApiResponse<>(
 				 HttpStatus.OK.value(),
 				 	"Cliente carregado com sucesso",
-				 	cliente
+				 	new ClienteDto(cliente)
 				 );
 		
 	     return ResponseEntity.ok( response);
 	}
 	
 	@GetMapping()
-	public ResponseEntity<ApiResponse<List<Cliente>>> listarCliente(){
+	public ResponseEntity<ApiResponse<List<ClienteDto>>> listarCliente(){
 		
-		List<Cliente> clientes = clienteService.listarCliente();
+		List<ClienteDto> clientesDto= clienteService.listarCliente();
 		
-		ApiResponse<List<Cliente>> response = new ApiResponse<>(
+		ApiResponse<List<ClienteDto>> response = new ApiResponse<>(
 				 HttpStatus.OK.value(),
 				 	"Cliente carregado com sucesso",
-				 	clientes
+				 	clientesDto
 				 );
 		
 	     return ResponseEntity.ok( response);

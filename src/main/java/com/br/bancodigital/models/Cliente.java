@@ -1,9 +1,12 @@
 package com.br.bancodigital.models;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.br.bancodigital.enuns.TipoCliente;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -11,6 +14,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -37,6 +41,9 @@ public class Cliente {
 			generator = "cliente_seq"
 	)
 	private Long id;
+	
+	@OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<Conta> contas = new ArrayList<>();
 	
 	@Column(length = 100, nullable = false) 
 	private String nome;
@@ -69,5 +76,7 @@ public class Cliente {
 	@Enumerated(EnumType.STRING) 
 	@Column( nullable = false)
 	private TipoCliente tipoCliente;
+	
+	
 
 }

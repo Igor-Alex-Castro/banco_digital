@@ -6,12 +6,15 @@ import com.br.bancodigital.enuns.TipoCliente;
 import com.br.bancodigital.models.Cliente;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record ClienteDto(
+		
+		Long id,
 
 		@NotBlank(message = "o parâmetro 'nome' não pode ser vazio")
 		@Size(min = 2, max = 100, message = "O nome deve ter entre 2 e 100 caracteres.")
@@ -41,16 +44,21 @@ public record ClienteDto(
 		String complemento,
 		
 		@NotNull(message = "O tipo do cliente é obrigatório (COMUM, SUPER, PREMIUM )")
-		TipoCliente tipoCliente
+		TipoCliente tipoCliente,
+		
+		
+		EnderecoResumoDto enderecoResumoDto
 
 ) {
 	
 	public ClienteDto(Cliente cliente) {
 		
 		this(
-				cliente.getNome(), cliente.getCpf() ,
+				cliente.getId(), cliente.getNome(), cliente.getCpf() ,
 				cliente.getDataNasce(), cliente.getCep(), cliente.getNumero(),
-				cliente.getComplemento(),cliente.getTipoCliente()
+				cliente.getComplemento(),cliente.getTipoCliente(),
+				new EnderecoResumoDto(cliente)
+				
 
 		);
 	}

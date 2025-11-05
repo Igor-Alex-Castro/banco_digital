@@ -97,9 +97,15 @@ public class ClienteService {
 		return cliente;
 	}
 
-	public List<Cliente> listarCliente() {
+	public List<ClienteDto> listarCliente() {
 		// TODO Auto-generated method stub
-		return clienteRepository.findAll();
+		List<Cliente> clientes = clienteRepository.findAll();
+		
+		List<ClienteDto> clientesDto = clientes.stream()
+				.map(ClienteDto::new)
+				.toList();
+		
+		return clientesDto ;
 	}
 	
 }
