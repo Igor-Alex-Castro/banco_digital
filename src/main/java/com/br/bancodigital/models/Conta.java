@@ -1,8 +1,8 @@
 package com.br.bancodigital.models;
 
-import java.math.BigDecimal;
 
 import com.br.bancodigital.enuns.TipoConta;
+import com.br.bancodigital.enuns.TipoPix;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -19,6 +19,7 @@ import jakarta.persistence.SequenceGenerator;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Entity
@@ -26,6 +27,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Conta {
 	
 	@Id
@@ -40,6 +42,7 @@ public class Conta {
 			generator = "conta_seq"
 	)
 
+	@EqualsAndHashCode.Include
 	private Long id;
 	
 	@ManyToOne
@@ -47,16 +50,22 @@ public class Conta {
 	private Cliente cliente;
 	
 	@OneToOne(mappedBy = "conta", cascade = CascadeType.ALL)
-	private ContaPonpanca contaPonpanca;
+	private ContaPoupanca contaPoupanca;
 	
 	@OneToOne(mappedBy = "conta", cascade = CascadeType.ALL)
 	private ContaCorrente  contaCorrente;
 	
 	private String agencia;
 	
+	 @EqualsAndHashCode.Include
 	@Column( nullable = false, unique = true)
 	private String conta;
 	
+	 @Column(  unique = true)
+	private String chavePix;
+	
+	@Enumerated(EnumType.STRING) 
+	private TipoPix tipopix;
 	
 	@Enumerated(EnumType.STRING) 
 	@Column( nullable = false)

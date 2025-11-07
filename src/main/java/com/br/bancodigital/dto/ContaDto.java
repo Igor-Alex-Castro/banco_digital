@@ -2,6 +2,7 @@ package com.br.bancodigital.dto;
 
 
 import com.br.bancodigital.enuns.TipoConta;
+import com.br.bancodigital.enuns.TipoPix;
 import com.br.bancodigital.models.Conta;
 
 import jakarta.validation.constraints.NotBlank;
@@ -23,6 +24,11 @@ public record ContaDto(
     
 	@NotNull(message = "O tipo da conta deve ser obrigatória")
 	TipoConta tipoConta,
+	
+	
+	TipoPix tipopix,
+	
+	String chavePix,
     
 	ContaDetalheDto info
     
@@ -33,9 +39,12 @@ public record ContaDto(
             conta.getAgencia(),
             conta.getConta(),
             conta.getTipoConta(),
+            conta.getTipopix(),
+            conta.getChavePix(),
             conta.getTipoConta() == TipoConta.POUPANCA  ? 
             	new ContaPoupDto(conta) : new ContaCorrenteDto(conta)
-            		
+            
+            
         );
     }
 

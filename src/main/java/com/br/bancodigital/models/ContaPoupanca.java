@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ContaPonpanca {
+public class ContaPoupanca {
 	@Id
 	@SequenceGenerator(
 		name="conta_poup_seq",

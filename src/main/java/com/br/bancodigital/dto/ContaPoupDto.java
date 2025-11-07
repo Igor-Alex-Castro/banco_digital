@@ -18,9 +18,9 @@ public record ContaPoupDto(
 	public ContaPoupDto(Conta conta) {
 		this(
 				
-				conta.getContaPonpanca().getId(),
-				conta.getContaPonpanca().getTaxaRendaAnual(),
-				conta.getContaPonpanca().getSaldo()
+				conta.getContaPoupanca().getId(),
+				conta.getContaPoupanca().getTaxaRendaAnual(),
+				conta.getContaPoupanca().getSaldo()
 		);
 	}
 }
