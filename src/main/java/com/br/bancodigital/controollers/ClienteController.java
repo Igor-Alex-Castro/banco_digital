@@ -55,7 +55,7 @@ public class ClienteController {
 		Cliente clienteAtualizado = clienteService.salvarOuAtualiza(id, clienteDto);
 		
 		ApiResponse<ClienteDto> response = new ApiResponse<>(
-				 HttpStatus.CREATED.value(),
+				 HttpStatus.OK.value(),
 				 	"Cliente atualizado com sucesso",
 				 	new ClienteDto(clienteAtualizado)
 				 );

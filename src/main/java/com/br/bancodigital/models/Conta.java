@@ -1,6 +1,8 @@
 package com.br.bancodigital.models;
 
 
+import java.time.LocalDate;
+
 import com.br.bancodigital.enuns.TipoConta;
 import com.br.bancodigital.enuns.TipoPix;
 
@@ -71,5 +73,8 @@ public class Conta {
 	@Column( nullable = false)
 	private TipoConta tipoConta;
 	
+	@Column(name = "DATA_VIGENCIA", nullable = false)
+	private LocalDate dataVigencia;
 	
+	private LocalDate dataPagemento;
 }

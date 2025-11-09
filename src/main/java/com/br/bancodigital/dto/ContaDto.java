@@ -1,9 +1,12 @@
 package com.br.bancodigital.dto;
 
 
+import java.time.LocalDate;
+
 import com.br.bancodigital.enuns.TipoConta;
 import com.br.bancodigital.enuns.TipoPix;
 import com.br.bancodigital.models.Conta;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -30,6 +33,13 @@ public record ContaDto(
 	
 	String chavePix,
     
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy") 
+	@NotNull(message = "O parâmetro 'diaVigencia' é obrigatório e não pode ser nulo")
+	LocalDate dataVigencia,
+	
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy") 
+	LocalDate dataPagamento,
+	
 	ContaDetalheDto info
     
 ) {
@@ -41,8 +51,11 @@ public record ContaDto(
             conta.getTipoConta(),
             conta.getTipopix(),
             conta.getChavePix(),
+            conta.getDiaVigencia(),
+            conta.getDataPagemento(),
             conta.getTipoConta() == TipoConta.POUPANCA  ? 
             	new ContaPoupDto(conta) : new ContaCorrenteDto(conta)
+            	
             
             
         );

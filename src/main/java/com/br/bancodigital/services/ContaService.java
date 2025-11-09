@@ -1,12 +1,15 @@
 package com.br.bancodigital.services;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
 import com.br.bancodigital.dto.ContaDto;
+import com.br.bancodigital.dto.OperacoesDto;
 import com.br.bancodigital.dto.SalvarChavePixDto;
 import com.br.bancodigital.dto.TransferenciaDTO;
 import com.br.bancodigital.enuns.TipoCliente;
@@ -117,6 +120,7 @@ public class ContaService {
 		conta.setConta(contaDto.conta());
 		conta.setAgencia(contaDto.agencia());
 		conta.setTipoConta(contaDto.tipoConta());
+		conta.setDiaVigencia(contaDto.diaVigencia());
 
 		return conta;
 	}
@@ -358,6 +362,120 @@ public class ContaService {
 				.orElseThrow(() -> new BusinessException("Não tem essa conta na base"));
 
 		return movimentacaoTransferencia(contaAtual, contaDestino, transferenciaDTO);
+	}
+
+	public ContaDto depositar(Long id,
+			OperacoesDto operacoesDto) {
+		// TODO Auto-generated method stub
+			BigDecimal valor = operacoesDto.valor();
+			
+				 Conta conta = contaRepository.findById(id)
+							.orElseThrow(() -> new BusinessException("Não tem essa conta na base")); 
+				 
+				if(valor.compareTo(BigDecimal.ZERO) == -1 || valor.compareTo(BigDecimal.ZERO) == 0) {
+					throw new BusinessException("Para desposito o valor deve ser positivo");
+				}
+				 
+				if(conta.getTipoConta() == TipoConta.POUPANCA) {
+					BigDecimal valorConta = conta.getContaPoupanca().getSaldo();
+					conta.getContaPoupanca().setSaldo(valorConta.add(valor));
+					
+				}else {
+					BigDecimal valorConta = conta.getContaCorrente().getSaldo();
+					conta.getContaCorrente().setSaldo(valorConta.add(valor));
+				}
+				
+				contaRepository.save(conta);
+				
+		return new ContaDto(conta);
+	}
+
+	public ContaDto sacar(Long id,  OperacoesDto operacoesDto) {
+		// TODO Auto-generated method stub
+		
+		BigDecimal valor = operacoesDto.valor();
+		
+		 Conta conta = contaRepository.findById(id)
+					.orElseThrow(() -> new BusinessException("Não tem essa conta na base")); 
+		 
+		if(valor.compareTo(BigDecimal.ZERO) == -1 || valor.compareTo(BigDecimal.ZERO) == 0) {
+			throw new BusinessException("Para saque o valor deve ser positivo");
+		}
+		 
+		if(conta.getTipoConta() == TipoConta.POUPANCA) {
+			BigDecimal valorConta = conta.getContaPoupanca().getSaldo();
+			
+			BigDecimal valorFinal = valorConta.subtract(valor);
+			
+			if(valorFinal.compareTo(BigDecimal.ZERO) == -1 ) {
+				throw new BusinessException("saldo insuficiente");
+			}
+			
+			conta.getContaPoupanca().setSaldo(valorFinal);
+		}else {
+			
+			
+			BigDecimal valorConta = conta.getContaCorrente().getSaldo();
+			BigDecimal valorFinal = valorConta.subtract(valor);
+			
+			if(valorFinal.compareTo(valor) == -1 ) {
+				throw new BusinessException("saldo insuficiente");
+			}
+			conta.getContaCorrente().setSaldo(valorFinal);
+		}
+		
+		contaRepository.save(conta);
+		
+		return new ContaDto(conta);
+	}
+
+	public ContaDto manutencao(Long id) {
+		
+		 Conta conta = contaRepository.findById(id)
+					.orElseThrow(() -> new BusinessException("Não tem essa conta na base")); 
+		 
+		 LocalDate dataAtual = LocalDate.now();
+		 
+		 if(conta.getDataPagemento() == null) {
+			
+				 if(conta.getTipoConta() == TipoConta.CORRENTE){
+					 BigDecimal saldoAtual =  conta.getContaCorrente().getSaldo();
+					 BigDecimal taxaMensal = conta.getContaCorrente().getTaxaMensal();
+					 
+					 conta.getContaCorrente().setSaldo(saldoAtual.subtract(taxaMensal));
+					 conta.setDataPagemento(dataAtual);
+					 
+					 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+					 LocalDate data = LocalDate.parse("05/11/2025", formatter);
+					 conta.setDataVigencia( data);
+				 }
+				 	 contaRepository.save(conta);
+		}else {
+			if(conta.getTipoConta() == TipoConta.CORRENTE){
+				
+				
+				if(conta.getDataPagemento().isAfter(conta.getDataVigencia())
+						|| conta.getDataPagemento().isEqual(conta.getDataVigencia())) {
+					
+					
+					
+				}
+				 BigDecimal saldoAtual =  conta.getContaCorrente().getSaldo();
+				 BigDecimal taxaMensal = conta.getContaCorrente().getTaxaMensal();
+				 
+				 conta.getContaCorrente().setSaldo(saldoAtual.subtract(taxaMensal));
+				 conta.setDataPagemento(dataAtual);
+			 }
+		}
+		 
+		 
+		 
+		 
+		 if(conta.getDataPagemento().isBefore(dataAtual) ) {
+			 
+		 }
+		
+		return new ContaDto(conta);
 	}
 
 }

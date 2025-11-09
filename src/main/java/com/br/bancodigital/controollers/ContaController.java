@@ -16,9 +16,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.br.bancodigital.dto.ApiResponse;
+import com.br.bancodigital.dto.ClienteDto;
 import com.br.bancodigital.dto.ContaDto;
+import com.br.bancodigital.dto.OperacoesDto;
 import com.br.bancodigital.dto.SalvarChavePixDto;
 import com.br.bancodigital.dto.TransferenciaDTO;
+import com.br.bancodigital.models.Cliente;
 import com.br.bancodigital.models.Conta;
 import com.br.bancodigital.services.ContaService;
 
@@ -101,6 +104,20 @@ public class ContaController {
 		return ResponseEntity.ok( response);
 	}
 	
+	@PutMapping("/{id}/manutencao")
+	public ResponseEntity<ApiResponse<ContaDto>> manutencao(@PathVariable @NotNull(message = "O ID da conta é obrigatório") long id){
+		
+		ContaDto clienteDto = contaService.manutencao(id);
+		
+		ApiResponse<ContaDto> response = new ApiResponse<>(
+				 HttpStatus.OK.value(),
+				 	"Cliente atualizado com sucesso",
+				 	clienteDto
+				 );
+		
+		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
+	
 	@PostMapping("/{contaId}/pix")
 	public ResponseEntity<ApiResponse<ContaDto>> salvaChavePix(
 			@PathVariable @NotNull(message = "O ID da conta é obrigatório") Long contaId,
@@ -152,7 +169,7 @@ public class ContaController {
 		return ResponseEntity.ok( response);
 	}
 	
-	@GetMapping("cliente/{idCliente}")
+	@GetMapping("/cliente/{idCliente}")
 	public ResponseEntity<ApiResponse<List<ContaDto>>> obterContasPorIdCliente(@PathVariable @NotNull(message = "O ID do cliente é obrigatório") Long idCliente){
 		
 		List<ContaDto> contasDto = contaService.obterContasPorIdCliente(idCliente);
@@ -196,5 +213,36 @@ public class ContaController {
 	     return ResponseEntity.noContent().build();
 	}
 	
+	@PostMapping("/{id}/deposito")
+	public ResponseEntity<ApiResponse<ContaDto>> depositoConta(
+			@PathVariable @NotNull(message = "O ID da conta é obrigatório") Long id,
+			@RequestBody @Valid OperacoesDto operacoesDto){
+		
+		ContaDto contasDto = contaService.depositar(id, operacoesDto);
+		
+		ApiResponse<ContaDto> response = new ApiResponse<>(
+				 HttpStatus.OK.value(),
+				 	"Deposito realizado com sucesso",
+				 	contasDto 
+				 );
+		
+		return ResponseEntity.ok( response);
+	}
+	
+	@PostMapping("/{id}/saque")
+	public ResponseEntity<ApiResponse<ContaDto>> saqueConta(
+			@PathVariable @NotNull(message = "O ID da conta é obrigatório") Long id,
+			@RequestBody @Valid OperacoesDto operacoesDto){
+		
+		ContaDto contasDto = contaService.sacar(id, operacoesDto);
+		
+		ApiResponse<ContaDto> response = new ApiResponse<>(
+				 HttpStatus.OK.value(),
+				 	"Deposito realizado com sucesso",
+				 	contasDto 
+				 );
+		
+		return ResponseEntity.ok( response);
+	}
 
 }
