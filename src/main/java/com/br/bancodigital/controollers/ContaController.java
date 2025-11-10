@@ -111,12 +111,28 @@ public class ContaController {
 		
 		ApiResponse<ContaDto> response = new ApiResponse<>(
 				 HttpStatus.OK.value(),
-				 	"Cliente atualizado com sucesso",
+				 	"Taxa(s) aplicada com sucesso",
 				 	clienteDto
 				 );
 		
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
+	
+	@PutMapping("/{id}/rendimentos")
+	public ResponseEntity<ApiResponse<ContaDto>> rendimento(@PathVariable @NotNull(message = "O ID da conta é obrigatório") long id){
+		
+		ContaDto clienteDto = contaService.rendimentos(id);
+		
+		ApiResponse<ContaDto> response = new ApiResponse<>(
+				 HttpStatus.OK.value(),
+				 	"Rendimento(s) aplicado com sucesso",
+				 	clienteDto
+				 );
+		
+		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
+	
+	
 	
 	@PostMapping("/{contaId}/pix")
 	public ResponseEntity<ApiResponse<ContaDto>> salvaChavePix(

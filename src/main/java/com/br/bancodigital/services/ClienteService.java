@@ -27,16 +27,27 @@ public class ClienteService {
 		this.enderecoService = enderecoService;
 	}
 	
-	public Cliente salvarOuAtualiza(Long id, ClienteDto clienteDto) {
+	public Cliente salvar(ClienteDto clienteDto) {
+		
+		
+		validacoesCliente(null, clienteDto);
+
+		Cliente cliente = popularCliente(clienteDto);
+	
+		
+		return clienteRepository.save(cliente);
+	}
+	
+	public Cliente atualiza(Long id, ClienteDto clienteDto) {
 		
 		validacoesCliente(id, clienteDto);
 
 		Cliente cliente = popularCliente(clienteDto);
 		
-		if(id != null) {
-			buscarPorId(id);
-			cliente.setId(id);
-		}
+		
+		buscarPorId(id);
+		cliente.setId(id);
+		
 		
 		return clienteRepository.save(cliente);
 	}

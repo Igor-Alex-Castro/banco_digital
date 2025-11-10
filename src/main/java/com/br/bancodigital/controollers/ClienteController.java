@@ -38,7 +38,7 @@ public class ClienteController {
 	@PostMapping()
 	public ResponseEntity<ApiResponse<ClienteDto>> salvar(@RequestBody @Valid ClienteDto clienteDto){
 		
-		Cliente clienteCriado = clienteService.salvarOuAtualiza(null, clienteDto);
+		Cliente clienteCriado = clienteService.salvar(clienteDto);
 		 
 		ApiResponse<ClienteDto> response = new ApiResponse<>(
 				 HttpStatus.CREATED.value(),
@@ -52,7 +52,7 @@ public class ClienteController {
 	@PutMapping("/{id}")
 	public ResponseEntity<ApiResponse<ClienteDto>> atualizar(@PathVariable @NotNull(message = "O ID do cliente é obrigatório") Long id, @RequestBody @Valid ClienteDto clienteDto){
 		
-		Cliente clienteAtualizado = clienteService.salvarOuAtualiza(id, clienteDto);
+		Cliente clienteAtualizado = clienteService.atualiza(id, clienteDto);
 		
 		ApiResponse<ClienteDto> response = new ApiResponse<>(
 				 HttpStatus.OK.value(),

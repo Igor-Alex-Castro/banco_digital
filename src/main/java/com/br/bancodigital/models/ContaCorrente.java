@@ -2,12 +2,14 @@ package com.br.bancodigital.models;
 
 import java.math.BigDecimal;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import lombok.AllArgsConstructor;
@@ -22,16 +24,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ContaCorrente {
 	@Id
-	@SequenceGenerator(
-		name="conta_corrente_seq",
-		sequenceName = "conta_corrente_sequence",
-		allocationSize = 1
-	)
-	
-	@GeneratedValue(
-			strategy = GenerationType.SEQUENCE,
-			generator = "conta_corrente_seq"
-	)
+
 	private Long id;
 	
 	@Column(name = "taxa_mensal", nullable = false, columnDefinition = "NUMERIC(10,2)")
@@ -42,6 +35,7 @@ public class ContaCorrente {
 	
 	
 	@OneToOne
+	@MapsId
 	@JoinColumn(name="conta_id", nullable = false, unique = true)
 	private Conta conta;
 	
