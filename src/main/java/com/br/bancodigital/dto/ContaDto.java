@@ -33,12 +33,7 @@ public record ContaDto(
 	
 	String chavePix,
     
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy") 
-	@NotNull(message = "O parâmetro 'diaVigencia' é obrigatório e não pode ser nulo")
-	LocalDate dataVigencia,
-	
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy") 
-	LocalDate dataPagamento,
+
 	
 	ContaDetalheDto info
     
@@ -51,8 +46,6 @@ public record ContaDto(
             conta.getTipoConta(),
             conta.getTipopix(),
             conta.getChavePix(),
-            conta.getDiaVigencia(),
-            conta.getDataPagemento(),
             conta.getTipoConta() == TipoConta.POUPANCA  ? 
             	new ContaPoupDto(conta) : new ContaCorrenteDto(conta)
             	

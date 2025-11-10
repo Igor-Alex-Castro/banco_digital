@@ -25,6 +25,7 @@ import com.br.bancodigital.repositories.ClienteRepository;
 import com.br.bancodigital.repositories.ContaCorrenteRepository;
 import com.br.bancodigital.repositories.ContaPoupRepository;
 import com.br.bancodigital.repositories.ContaRepository;
+import com.br.bancodigital.repositories.ManutencaoRepository;
 import com.br.bancodigital.utils.Utils;
 
 @Service
@@ -34,9 +35,12 @@ public class ContaService {
 	private final ClienteRepository clienteRepository;
 	private final ContaPoupRepository contaPoupRepository;
 	private final ContaCorrenteRepository contaCorrenteRepository;
+	private final ManutencaoRepository manutencaoRepository;
+
 
 	public ContaService(ContaRepository contaRepository, ClienteRepository clienteRepository,
-			ContaPoupRepository contaPoupRepository, ContaCorrenteRepository contaCorrenteRepository
+			ContaPoupRepository contaPoupRepository, ContaCorrenteRepository contaCorrenteRepository,
+			ManutencaoRepository manutencaoRepository
 
 	) {
 		// TODO Auto-generated constructor stub
@@ -44,6 +48,7 @@ public class ContaService {
 		this.clienteRepository = clienteRepository;
 		this.contaCorrenteRepository = contaCorrenteRepository;
 		this.contaPoupRepository = contaPoupRepository;
+		this.manutencaoRepository =  manutencaoRepository;
 	}
 
 	public Conta salvar(ContaDto contaDto) {
@@ -116,11 +121,25 @@ public class ContaService {
 
 	private Conta popularConta(ContaDto contaDto, Conta conta, Cliente cliente) {
 		// TODO Auto-generated method stub
+		LocalDate dataAtual = LocalDate.now();
+		
 		conta.setCliente(cliente);
 		conta.setConta(contaDto.conta());
 		conta.setAgencia(contaDto.agencia());
 		conta.setTipoConta(contaDto.tipoConta());
-		conta.setDiaVigencia(contaDto.diaVigencia());
+		
+
+		conta.setDataCriacao(dataAtual);
+		
+		LocalDate proximoDia5;
+		
+		if (dataAtual.getDayOfMonth() > 5) {
+			proximoDia5 = dataAtual.plusMonths(1).withDayOfMonth(5);
+		}else {
+			proximoDia5 = dataAtual.withDayOfMonth(5);
+		}
+		
+		conta.setDataVigencia(proximoDia5);
 
 		return conta;
 	}
@@ -430,52 +449,37 @@ public class ContaService {
 	}
 
 	public ContaDto manutencao(Long id) {
+		Conta conta = contaRepository.findById(id)
+				.orElseThrow(() -> new BusinessException("Não tem essa conta na base")); 
 		
-		 Conta conta = contaRepository.findById(id)
-					.orElseThrow(() -> new BusinessException("Não tem essa conta na base")); 
-		 
-		 LocalDate dataAtual = LocalDate.now();
-		 
-		 if(conta.getDataPagemento() == null) {
-			
-				 if(conta.getTipoConta() == TipoConta.CORRENTE){
-					 BigDecimal saldoAtual =  conta.getContaCorrente().getSaldo();
-					 BigDecimal taxaMensal = conta.getContaCorrente().getTaxaMensal();
-					 
-					 conta.getContaCorrente().setSaldo(saldoAtual.subtract(taxaMensal));
-					 conta.setDataPagemento(dataAtual);
-					 
-					 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-					 LocalDate data = LocalDate.parse("05/11/2025", formatter);
-					 conta.setDataVigencia( data);
-				 }
-				 	 contaRepository.save(conta);
-		}else {
-			if(conta.getTipoConta() == TipoConta.CORRENTE){
-				
-				
-				if(conta.getDataPagemento().isAfter(conta.getDataVigencia())
-						|| conta.getDataPagemento().isEqual(conta.getDataVigencia())) {
-					
-					
-					
-				}
-				 BigDecimal saldoAtual =  conta.getContaCorrente().getSaldo();
-				 BigDecimal taxaMensal = conta.getContaCorrente().getTaxaMensal();
-				 
-				 conta.getContaCorrente().setSaldo(saldoAtual.subtract(taxaMensal));
-				 conta.setDataPagemento(dataAtual);
-			 }
+		LocalDate hoje = LocalDate.now();
+		
+		if(hoje.isBefore(conta.getDataVigencia())) {
+			throw new BusinessException("Cobrança não aplicada: ainda não atingiu a data de vigência.");
 		}
-		 
-		 
-		 
-		 
-		 if(conta.getDataPagemento().isBefore(dataAtual) ) {
-			 
-		 }
 		
-		return new ContaDto(conta);
+		LocalDate dia5EsteMes = hoje.withDayOfMonth(5);
+		
+		LocalDate ultimaCobrancaPossivel = hoje.isBefore(dia5EsteMes) ?
+				dia5EsteMes.minusMonths(1): dia5EsteMes;
+	
+		
+		if(conta.getDataUltimoPagemento() != null &&
+				conta.getDataUltimoPagemento().getMonth() == ultimaCobrancaPossivel.getMonth() &&
+				conta.getDataUltimoPagemento().getYear() == ultimaCobrancaPossivel.getYear()) {
+			
+			throw new BusinessException("Cobrança não aplicada: já foi cobrada esse mês");
+		}
+		
+		BigDecimal saldoAtual = conta.getContaCorrente().getSaldo();
+		BigDecimal taxaMensal = conta.getContaCorrente().getTaxaMensal();
+		conta.getContaCorrente().setSaldo(saldoAtual.subtract(taxaMensal));
+		
+        conta.setDataUltimoPagemento((ultimaCobrancaPossivel));
+
+		contaRepository.save(conta);
+		
+        return new ContaDto(conta);
 	}
 
 }

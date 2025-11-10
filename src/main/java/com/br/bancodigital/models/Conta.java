@@ -2,6 +2,7 @@ package com.br.bancodigital.models;
 
 
 import java.time.LocalDate;
+import java.util.List;
 
 import com.br.bancodigital.enuns.TipoConta;
 import com.br.bancodigital.enuns.TipoPix;
@@ -16,6 +17,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import lombok.AllArgsConstructor;
@@ -76,5 +78,11 @@ public class Conta {
 	@Column(name = "DATA_VIGENCIA", nullable = false)
 	private LocalDate dataVigencia;
 	
-	private LocalDate dataPagemento;
+	@Column(name = "DATA_CRIACAO", nullable = false)
+	private LocalDate dataCriacao;
+	
+	private LocalDate dataUltimoPagemento;
+	
+	@OneToMany(mappedBy = "conta", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<Manutencao> manutencoes;
 }
