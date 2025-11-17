@@ -15,6 +15,7 @@ import com.br.bancodigital.dto.ApiResponse;
 import com.br.bancodigital.dto.CartaoDTO;
 import com.br.bancodigital.dto.DetalhesCartaoDTO;
 import com.br.bancodigital.dto.LimiteDto;
+import com.br.bancodigital.dto.StatusDto;
 import com.br.bancodigital.services.CartaoService;
 
 import jakarta.validation.Valid;
@@ -61,14 +62,42 @@ public class CartaoController {
 	     return ResponseEntity.ok( response);
 	}
 	
-	@PutMapping("/{id}")
-	public ResponseEntity<ApiResponse<DetalhesCartaoDTO>> atualizar(@PathVariable @NotNull(message = "O ID do cliente é obrigatório") Long id, @RequestBody @Valid LimiteDto limiteDto){
+	@PutMapping("/{id}/limite")
+	public ResponseEntity<ApiResponse<DetalhesCartaoDTO>> limiteCredito(@PathVariable @NotNull(message = "O ID do cliente é obrigatório") Long id, @RequestBody @Valid LimiteDto limiteDto){
 		
-		DetalhesCartaoDTO detalhesCartaoDTO = cartaoService.limite(id, limiteDto);
+		DetalhesCartaoDTO detalhesCartaoDTO = cartaoService.limiteCredito(id, limiteDto);
 		
 		ApiResponse<DetalhesCartaoDTO> response = new ApiResponse<>(
 				 HttpStatus.OK.value(),
 				 	"Cliente atualizado com sucesso",
+				 	detalhesCartaoDTO
+				 );
+		
+		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
+	
+	@PutMapping("/{id}/limite-diario")
+	public ResponseEntity<ApiResponse<DetalhesCartaoDTO>> limiteDebito(@PathVariable @NotNull(message = "O ID do cliente é obrigatório") Long id, @RequestBody @Valid LimiteDto limiteDto){
+		
+		DetalhesCartaoDTO detalhesCartaoDTO = cartaoService.limiteDebito(id, limiteDto);
+		
+		ApiResponse<DetalhesCartaoDTO> response = new ApiResponse<>(
+				 HttpStatus.OK.value(),
+				 	"Cliente atualizado com sucesso",
+				 	detalhesCartaoDTO
+				 );
+		
+		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
+	
+	@PutMapping("/{id}/status")
+	public ResponseEntity<ApiResponse<DetalhesCartaoDTO>> status(@PathVariable @NotNull(message = "O ID do cliente é obrigatório") Long id, @RequestBody @Valid StatusDto statusDto){
+		
+		DetalhesCartaoDTO detalhesCartaoDTO = cartaoService.status(id, statusDto);
+		
+		ApiResponse<DetalhesCartaoDTO> response = new ApiResponse<>(
+				 HttpStatus.OK.value(),
+				 	"Cartao atualizado com sucesso",
 				 	detalhesCartaoDTO
 				 );
 		
