@@ -8,9 +8,8 @@ import com.br.bancodigital.models.Conta;
 public record ContaPoupDto(
 		Long id,
 		
-		BigDecimal taxaRendaAnual,
+		BigDecimal taxaRendaAnual
 
-		BigDecimal saldo
 		) implements ContaDetalheDto
 
 {
@@ -19,8 +18,7 @@ public record ContaPoupDto(
 		this(
 				
 				conta.getContaPoupanca().getId(),
-				conta.getContaPoupanca().getTaxaRendaAnual(),
-				conta.getContaPoupanca().getSaldo()
+				conta.getContaPoupanca().getTaxaRendaAnual()
 		);
 	}
 }

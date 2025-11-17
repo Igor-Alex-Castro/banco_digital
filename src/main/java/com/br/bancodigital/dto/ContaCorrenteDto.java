@@ -9,9 +9,8 @@ import com.br.bancodigital.models.Conta;
 public record ContaCorrenteDto(
 		Long id,
 		
-		BigDecimal taxaMensal,
+		BigDecimal taxaMensal
 		
-		 BigDecimal saldo
 		 
 		) implements ContaDetalheDto {
 	
@@ -19,8 +18,7 @@ public record ContaCorrenteDto(
 		this(
 				
 				conta.getContaCorrente().getId(),
-				conta.getContaCorrente().getTaxaMensal(),
-				conta.getContaCorrente().getSaldo()
+				conta.getContaCorrente().getTaxaMensal()
 		);
 	}
 

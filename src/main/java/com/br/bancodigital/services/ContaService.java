@@ -78,7 +78,6 @@ public class ContaService {
 	private ContaCorrente salvarContaTipoCorrente(Cliente cliente, Conta conta) {
 		// TODO Auto-generated method stub
 		ContaCorrente contaCorrente = new ContaCorrente();
-		contaCorrente.setSaldo(new BigDecimal(0.00));
 
 		if (cliente.getTipoCliente() == TipoCliente.COMUM) {
 			contaCorrente.setTaxaMensal(new BigDecimal(12.00));
@@ -102,7 +101,6 @@ public class ContaService {
 		// TODO Auto-generated method stub
 		ContaPoupanca contaPoupanca = new ContaPoupanca();
 
-		contaPoupanca.setSaldo(new BigDecimal(0.00));
 
 		if (cliente.getTipoCliente() == TipoCliente.COMUM) {
 
@@ -202,9 +200,7 @@ public class ContaService {
 			throw new BusinessException("Não é possivel transferir dinheiro para a mesma conta");
 		}
 
-		BigDecimal valorContaAtual = contaAtual.getTipoConta() == TipoConta.POUPANCA
-				? contaAtual.getContaPoupanca().getSaldo()
-				: contaAtual.getContaCorrente().getSaldo();
+		BigDecimal valorContaAtual = contaAtual.getSaldo() != null ? contaAtual.getSaldo() : BigDecimal.ZERO;
 
 		if (transferenciaDTO.valorTransferir().compareTo(BigDecimal.ZERO) == -1
 				|| transferenciaDTO.valorTransferir().compareTo(BigDecimal.ZERO) == 0) {
@@ -216,21 +212,14 @@ public class ContaService {
 			throw new BusinessException("Não foi possivel transferir pois não tem  saldo é suficente");
 		}
 
-		if (contaAtual.getTipoConta() == TipoConta.POUPANCA) {
-			contaAtual.getContaPoupanca().setSaldo(
-					valorContaAtual.subtract(transferenciaDTO.valorTransferir().subtract(new BigDecimal("2.00"))));
-		} else {
-			contaAtual.getContaCorrente().setSaldo(
-					valorContaAtual.subtract(transferenciaDTO.valorTransferir().subtract(new BigDecimal("2.00"))));
-		}
+		//transferenciaDTO.valorTransferir().subtract(new BigDecimal("2.00"))
+		valorContaAtual = valorContaAtual.subtract(transferenciaDTO.valorTransferir()).subtract(new BigDecimal("2.00"));
 
-		if (contaDestino.getTipoConta() == TipoConta.POUPANCA) {
-			BigDecimal valorContaDestino = contaDestino.getContaPoupanca().getSaldo();
-			contaDestino.getContaPoupanca().setSaldo(valorContaDestino.add(transferenciaDTO.valorTransferir()));
-		} else {
-			BigDecimal valorContaDestino = contaDestino.getContaCorrente().getSaldo();
-			contaDestino.getContaCorrente().setSaldo(valorContaDestino.add(transferenciaDTO.valorTransferir()));
-		}
+		contaAtual.setSaldo(valorContaAtual);
+		
+		BigDecimal valorContaDestino = contaDestino.getSaldo();
+		contaDestino.setSaldo(valorContaDestino.add(transferenciaDTO.valorTransferir()));
+		
 
 		contaRepository.save(contaAtual);
 		contaRepository.save(contaDestino);
@@ -243,8 +232,7 @@ public class ContaService {
 		Conta conta = contaRepository.findById(contaId)
 				.orElseThrow(() -> new BusinessException("Não tem essa conta na base"));
 
-		return conta.getTipoConta() == TipoConta.POUPANCA ? conta.getContaPoupanca().getSaldo()
-				: conta.getContaCorrente().getSaldo();
+		return conta.getSaldo();
 	}
 
 	public ContaDto salvaChavePix(Long contaId, SalvarChavePixDto salvarChavePixDto) {
@@ -398,14 +386,10 @@ public class ContaService {
 					throw new BusinessException("Para desposito o valor deve ser positivo");
 				}
 				 
-				if(conta.getTipoConta() == TipoConta.POUPANCA) {
-					BigDecimal valorConta = conta.getContaPoupanca().getSaldo();
-					conta.getContaPoupanca().setSaldo(valorConta.add(valor));
+				
+				BigDecimal valorConta = conta.getSaldo() != null ? conta.getSaldo() : BigDecimal.ZERO ;
+				conta.setSaldo(valorConta.add(valor));
 					
-				}else {
-					BigDecimal valorConta = conta.getContaCorrente().getSaldo();
-					conta.getContaCorrente().setSaldo(valorConta.add(valor));
-				}
 				
 				contaRepository.save(conta);
 				
@@ -424,27 +408,17 @@ public class ContaService {
 			throw new BusinessException("Para saque o valor deve ser positivo");
 		}
 		 
-		if(conta.getTipoConta() == TipoConta.POUPANCA) {
-			BigDecimal valorConta = conta.getContaPoupanca().getSaldo();
-			
-			BigDecimal valorFinal = valorConta.subtract(valor);
-			
-			if(valorFinal.compareTo(BigDecimal.ZERO) == -1 ) {
-				throw new BusinessException("saldo insuficiente");
-			}
-			
-			conta.getContaPoupanca().setSaldo(valorFinal);
-		}else {
+		
 			
 			
-			BigDecimal valorConta = conta.getContaCorrente().getSaldo();
+			BigDecimal valorConta = conta.getSaldo();
 			BigDecimal valorFinal = valorConta.subtract(valor);
 			
 			if(valorFinal.compareTo(valor) == -1 ) {
 				throw new BusinessException("saldo insuficiente");
 			}
-			conta.getContaCorrente().setSaldo(valorFinal);
-		}
+			conta.setSaldo(valorFinal);
+		
 		
 		contaRepository.save(conta);
 		
@@ -479,7 +453,7 @@ public class ContaService {
 			    : hoje.withDayOfMonth(5);
 		
 		 BigDecimal taxaMensal = conta.getContaCorrente().getTaxaMensal();
-		 BigDecimal saldoAtual = conta.getContaCorrente().getSaldo();
+		 BigDecimal saldoAtual = conta.getSaldo();
 		
 		if(inicioCobranca.isAfter(fimCobranca)) {
 			throw new BusinessException("Nenhum mês pendente de cobrança.");
@@ -502,7 +476,7 @@ public class ContaService {
 		     referencia = referencia.plusMonths(1);
 		}
 		
-		conta.getContaCorrente().setSaldo(saldoAtual);
+		conta.setSaldo(saldoAtual);
 	    conta.setDataUltimoPagemento(fimCobranca);
 	    contaRepository.save(conta);
 	    
@@ -518,8 +492,8 @@ public class ContaService {
 			throw new BusinessException("Rendimento não aplicado: redimento somente para contas corrente");
 		}
 		
-		if(conta.getContaPoupanca().getSaldo().compareTo(BigDecimal.ZERO) == -1 ||
-				conta.getContaPoupanca().getSaldo().compareTo(BigDecimal.ZERO) == 0 	) {
+		if(conta.getSaldo().compareTo(BigDecimal.ZERO) == -1 ||
+				conta.getSaldo().compareTo(BigDecimal.ZERO) == 0 	) {
 			 throw new BusinessException("Rendimento não aplicado: saldo insuficiente");
 		}
 		
@@ -543,7 +517,7 @@ public class ContaService {
 			    : hoje.withDayOfMonth(5);
 		
 		 BigDecimal taxaRendaAnual = conta.getContaPoupanca().getTaxaRendaAnual();
-		 BigDecimal saldoAtual = conta.getContaPoupanca().getSaldo();
+		 BigDecimal saldoAtual = conta.getSaldo();
 		
 		if(inicioCobranca.isAfter(fimCobranca)) {
 			throw new BusinessException("Nenhum mês pendente de cobrança.");
@@ -566,7 +540,7 @@ public class ContaService {
 		     referencia = referencia.plusMonths(1);
 		}
 		
-		conta.getContaPoupanca().setSaldo(saldoAtual);
+		conta.setSaldo(saldoAtual);
 	    conta.setDataUltimoPagemento(fimCobranca);
 	    contaRepository.save(conta);
 	    

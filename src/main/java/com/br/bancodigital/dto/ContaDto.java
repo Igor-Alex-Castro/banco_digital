@@ -1,12 +1,12 @@
 package com.br.bancodigital.dto;
 
 
-import java.time.LocalDate;
+
+import java.math.BigDecimal;
 
 import com.br.bancodigital.enuns.TipoConta;
 import com.br.bancodigital.enuns.TipoPix;
 import com.br.bancodigital.models.Conta;
-import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -33,7 +33,7 @@ public record ContaDto(
 	
 	String chavePix,
     
-
+	BigDecimal saldo,
 	
 	ContaDetalheDto info
     
@@ -46,6 +46,7 @@ public record ContaDto(
             conta.getTipoConta(),
             conta.getTipopix(),
             conta.getChavePix(),
+            conta.getSaldo(),
             conta.getTipoConta() == TipoConta.POUPANCA  ? 
             	new ContaPoupDto(conta) : new ContaCorrenteDto(conta)
             	

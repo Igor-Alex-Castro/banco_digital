@@ -1,17 +1,20 @@
 package com.br.bancodigital.models;
 
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
 import com.br.bancodigital.enuns.TipoConta;
 import com.br.bancodigital.enuns.TipoPix;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -62,7 +65,7 @@ public class Conta {
 	private String agencia;
 	
 	 @EqualsAndHashCode.Include
-	@Column( nullable = false, unique = true)
+  
 	private String conta;
 	
 	 @Column(  unique = true)
@@ -75,6 +78,10 @@ public class Conta {
 	@Column( nullable = false)
 	private TipoConta tipoConta;
 	
+	@Column(nullable = true, columnDefinition = "NUMERIC(10,2)")
+	private BigDecimal saldo;
+	
+	
 	@Column(name = "DATA_VIGENCIA", nullable = false)
 	private LocalDate dataVigencia;
 	
@@ -85,4 +92,9 @@ public class Conta {
 	
 	@OneToMany(mappedBy = "conta", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Manutencao> manutencoes;
+	
+	//@OneToOne(mappedBy = "conta", cascade = CascadeType.ALL,  orphanRemoval = true)
+	@OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@JoinColumn(name = "cartao_id", referencedColumnName = "id")
+	private Cartao cartao;
 }

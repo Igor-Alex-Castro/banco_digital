@@ -1,8 +1,8 @@
 package com.br.bancodigital.models;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -37,7 +37,7 @@ public class Manutencao {
 	
 	@GeneratedValue(
 			strategy = GenerationType.SEQUENCE,
-			generator = "conta_seq"
+			generator = "manutecao_seq"
 	)
 
 	private Long id;

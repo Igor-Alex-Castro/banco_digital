@@ -8,11 +8,13 @@ import org.springframework.stereotype.Repository;
 
 import com.br.bancodigital.enuns.TipoConta;
 import com.br.bancodigital.enuns.TipoPix;
+import com.br.bancodigital.models.Cartao;
 import com.br.bancodigital.models.Cliente;
 import com.br.bancodigital.models.Conta;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
 @Repository
 public interface ContaRepository extends JpaRepository<Conta, Long> {
@@ -33,6 +35,10 @@ public interface ContaRepository extends JpaRepository<Conta, Long> {
 
 
 	Optional<Conta> findByChavePixAndTipopix(String chavePix, TipoPix tipoPix);
+
+	Optional<Conta> findByContaAndAgencia( String conta, String agencia);
+
+	Optional<Conta> findByCartao(Cartao cartao);
 
 
 }

@@ -1,10 +1,10 @@
 package com.br.bancodigital.models;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.br.bancodigital.enuns.TipoCliente;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -43,7 +43,7 @@ public class Cliente {
 	private Long id;
 	
 	@OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<Conta> contas = new ArrayList<>();
+	private List<Conta> contas;
 	
 	@Column(length = 100, nullable = false) 
 	private String nome;

@@ -2,6 +2,8 @@ package com.br.bancodigital.models;
 
 import java.math.BigDecimal;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -19,14 +21,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class ContaPoupanca {
+	
 	@Id
 	private Long id;
 	
 	@Column(name = "taxa_rend_anual", nullable = false, columnDefinition = "NUMERIC(10,2)")
 	BigDecimal taxaRendaAnual;
 	
-	@Column(nullable = true, columnDefinition = "NUMERIC(10,2)")
-	private BigDecimal saldo;
 	
 	
 	@OneToOne

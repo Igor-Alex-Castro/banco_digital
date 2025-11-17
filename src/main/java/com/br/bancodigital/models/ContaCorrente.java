@@ -2,16 +2,14 @@ package com.br.bancodigital.models;
 
 import java.math.BigDecimal;
 
-import jakarta.persistence.CascadeType;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
-import jakarta.persistence.SequenceGenerator;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,16 +21,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class ContaCorrente {
+	
 	@Id
-
 	private Long id;
 	
 	@Column(name = "taxa_mensal", nullable = false, columnDefinition = "NUMERIC(10,2)")
 	private BigDecimal taxaMensal;
-	
-	@Column(nullable = true, columnDefinition = "NUMERIC(10,2)")
-	private BigDecimal saldo;
-	
 	
 	@OneToOne
 	@MapsId
