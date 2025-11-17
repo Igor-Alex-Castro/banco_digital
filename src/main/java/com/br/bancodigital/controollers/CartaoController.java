@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.br.bancodigital.dto.ApiResponse;
 import com.br.bancodigital.dto.CartaoDTO;
 import com.br.bancodigital.dto.DetalhesCartaoDTO;
+import com.br.bancodigital.dto.FaturaDto;
 import com.br.bancodigital.dto.LimiteDto;
 import com.br.bancodigital.dto.StatusDto;
 import com.br.bancodigital.services.CartaoService;
@@ -69,7 +70,7 @@ public class CartaoController {
 		
 		ApiResponse<DetalhesCartaoDTO> response = new ApiResponse<>(
 				 HttpStatus.OK.value(),
-				 	"Cliente atualizado com sucesso",
+				 	"Limite do cartão atualizado com sucesso",
 				 	detalhesCartaoDTO
 				 );
 		
@@ -97,8 +98,22 @@ public class CartaoController {
 		
 		ApiResponse<DetalhesCartaoDTO> response = new ApiResponse<>(
 				 HttpStatus.OK.value(),
-				 	"Cartao atualizado com sucesso",
+				 	"Status do cartao atualizado com sucesso",
 				 	detalhesCartaoDTO
+				 );
+		
+		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
+	
+	@GetMapping("/{id}/fatura")
+	public ResponseEntity<ApiResponse<FaturaDto>> fatura(@PathVariable @NotNull(message = "O ID do cliente é obrigatório") Long id){
+		
+		FaturaDto faturaDto = cartaoService.fatura(id);
+		
+		ApiResponse<FaturaDto> response = new ApiResponse<>(
+				 HttpStatus.OK.value(),
+				 	"Fatura carregada com sucesso",
+				 	faturaDto
 				 );
 		
 		return ResponseEntity.status(HttpStatus.OK).body(response);

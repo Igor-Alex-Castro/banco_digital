@@ -6,7 +6,9 @@ import org.springframework.stereotype.Service;
 
 import com.br.bancodigital.dto.CartaoDTO;
 import com.br.bancodigital.dto.DetalhesCartaoDTO;
+import com.br.bancodigital.dto.FaturaDto;
 import com.br.bancodigital.dto.LimiteDto;
+import com.br.bancodigital.dto.SenhaDto;
 import com.br.bancodigital.dto.StatusDto;
 import com.br.bancodigital.enuns.TipoCartao;
 import com.br.bancodigital.exceptions.BusinessException;
@@ -19,9 +21,6 @@ import com.br.bancodigital.repositories.CartaoCreditoRepository;
 import com.br.bancodigital.repositories.CartaoDebitoRepository;
 import com.br.bancodigital.repositories.CartaoRepository;
 import com.br.bancodigital.repositories.ContaRepository;
-
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 
 @Service
 public class CartaoService {
@@ -183,5 +182,41 @@ public class CartaoService {
 		cartaoRepository.save(cartao);
 		
 		return new DetalhesCartaoDTO(conta, cartao);
+	}
+
+	public DetalhesCartaoDTO status(Long id,
+			SenhaDto senhaDto) {
+		
+		Cartao cartao = cartaoRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("Este cartão não existe"));
+
+		Conta conta = contaRepository.findByCartao(cartao)
+				.orElseThrow(() -> new ResourceNotFoundException("Esta cartão não esta vinculado a nenhuma conta"));
+
+		if(cartao.getSenha().equals(senhaDto.senha())) {
+			throw new ResourceNotFoundException("A nova senha deve ser diferente da antiga");
+		};
+		
+		cartao.setSenha(senhaDto.senha());
+		
+		cartaoRepository.save(cartao);
+		
+		return new DetalhesCartaoDTO(conta, cartao);
+	}
+
+	public FaturaDto fatura(Long id) {
+		// TODO Auto-generated method stub
+		
+		Cartao cartao = cartaoRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("Este cartão não existe"));
+
+		contaRepository.findByCartao(cartao)
+				.orElseThrow(() -> new ResourceNotFoundException("Esta cartão não esta vinculado a nenhuma conta"));
+
+		if(cartao.getTipoCartao() != TipoCartao.CREDITO ) {
+			throw new ResourceNotFoundException("Somente cartões do tipo Credito tem fatura");
+		}
+		
+		return new FaturaDto(cartao.getCartaoCredito().getFatura() == null ? BigDecimal.ZERO :  cartao.getCartaoCredito().getFatura()) ;
 	}
 }
