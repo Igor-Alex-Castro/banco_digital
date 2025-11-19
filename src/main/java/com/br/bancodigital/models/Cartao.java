@@ -1,5 +1,7 @@
 package com.br.bancodigital.models;
 
+import java.time.LocalDate;
+
 import com.br.bancodigital.enuns.TipoCartao;
 
 import jakarta.persistence.CascadeType;
@@ -52,4 +54,12 @@ public class Cartao {
 	
 	@Enumerated(EnumType.STRING) 
 	private TipoCartao tipoCartao;
+	
+	@Column(name = "DATA_VIGENCIA", nullable = false)
+	private LocalDate dataVigencia;
+	
+	@Column(name = "DATA_CRIACAO", nullable = false)
+	private LocalDate dataCriacao;
+	
+	private LocalDate dataUltimoPagemento;
 }

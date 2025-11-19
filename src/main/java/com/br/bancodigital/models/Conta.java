@@ -97,4 +97,8 @@ public class Conta {
 	@OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinColumn(name = "cartao_id", referencedColumnName = "id")
 	private Cartao cartao;
+	
+	@OneToMany(mappedBy = "conta", cascade = CascadeType.ALL, orphanRemoval = true)
+	
+	private List<HistoricoPagamento> historicoPagamentos;
 }

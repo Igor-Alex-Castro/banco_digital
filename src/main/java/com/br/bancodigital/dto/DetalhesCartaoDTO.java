@@ -28,10 +28,12 @@ public record DetalhesCartaoDTO(
 		TipoCartao tipoCartao,
 		 
 		
+		
 		BigDecimal limite,
 		
 		BigDecimal saldo
 		
+	
 		
 )
 
@@ -49,6 +51,7 @@ public record DetalhesCartaoDTO(
 					 : cartao.getCartaoCredito().getLimite(),
 					 cartao.getTipoCartao() == TipoCartao.DEBITO ? conta.getSaldo() :
 						 cartao.getCartaoCredito().getFatura()
+					 
 					 
 				);
 	}

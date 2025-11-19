@@ -1,5 +1,8 @@
 package com.br.bancodigital.controollers;
 
+import java.time.YearMonth;
+
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -9,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.br.bancodigital.dto.ApiResponse;
@@ -16,6 +20,7 @@ import com.br.bancodigital.dto.CartaoDTO;
 import com.br.bancodigital.dto.DetalhesCartaoDTO;
 import com.br.bancodigital.dto.FaturaDto;
 import com.br.bancodigital.dto.LimiteDto;
+import com.br.bancodigital.dto.PagamentoDto;
 import com.br.bancodigital.dto.StatusDto;
 import com.br.bancodigital.services.CartaoService;
 
@@ -92,7 +97,7 @@ public class CartaoController {
 	}
 	
 	@PutMapping("/{id}/status")
-	public ResponseEntity<ApiResponse<DetalhesCartaoDTO>> status(@PathVariable @NotNull(message = "O ID do cliente é obrigatório") Long id, @RequestBody @Valid StatusDto statusDto){
+	public ResponseEntity<ApiResponse<DetalhesCartaoDTO>> status(@PathVariable @NotNull(message = "O ID do cartão é obrigatório") Long id, @RequestBody @Valid StatusDto statusDto){
 		
 		DetalhesCartaoDTO detalhesCartaoDTO = cartaoService.status(id, statusDto);
 		
@@ -106,9 +111,13 @@ public class CartaoController {
 	}
 	
 	@GetMapping("/{id}/fatura")
-	public ResponseEntity<ApiResponse<FaturaDto>> fatura(@PathVariable @NotNull(message = "O ID do cliente é obrigatório") Long id){
-		
-		FaturaDto faturaDto = cartaoService.fatura(id);
+	public ResponseEntity<ApiResponse<FaturaDto>> fatura(
+			@PathVariable @NotNull(message = "O ID do cartão é obrigatório") Long id,
+			@RequestParam  
+			@DateTimeFormat(pattern = "MM/yyyy") 
+			@NotNull(message = "O mês do cartão é obrigatório") YearMonth mes){
+	
+		FaturaDto faturaDto = cartaoService.fatura(id, mes);
 		
 		ApiResponse<FaturaDto> response = new ApiResponse<>(
 				 HttpStatus.OK.value(),
@@ -117,5 +126,19 @@ public class CartaoController {
 				 );
 		
 		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
+	
+	@PostMapping("/{id}/pagamento")
+	public ResponseEntity<ApiResponse<DetalhesCartaoDTO>> pagamento(@PathVariable @NotNull(message = "O ID do cartão é obrigatório") Long id, @RequestBody @Valid PagamentoDto pagamentoDto){
+		
+		DetalhesCartaoDTO detalhesCartaoDTO = cartaoService.pagemento(id, pagamentoDto);
+		 
+		ApiResponse<DetalhesCartaoDTO> response = new ApiResponse<>(
+				 HttpStatus.CREATED.value(),
+				 	"Pagamento realizado com sucesso",
+				 	detalhesCartaoDTO
+				 );
+		
+		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 }
