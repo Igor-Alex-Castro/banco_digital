@@ -18,6 +18,7 @@ import com.br.bancodigital.dto.PagamentoDto;
 import com.br.bancodigital.dto.SenhaDto;
 import com.br.bancodigital.dto.StatusDto;
 import com.br.bancodigital.enuns.TipoCartao;
+import com.br.bancodigital.enuns.TipoConta;
 import com.br.bancodigital.exceptions.BusinessException;
 import com.br.bancodigital.exceptions.ResourceNotFoundException;
 import com.br.bancodigital.models.Cartao;
@@ -61,6 +62,10 @@ public class CartaoService {
 
 		if (cartaoRepository.existsBySenha(cartaoDto.senha())) {
 			throw new BusinessException("Já existe um cartão com esta senha");
+		}
+		
+		if(cartaoDto.tipoCartao() == TipoCartao.CREDITO && conta.getTipoConta() == TipoConta.POUPANCA) {
+			throw new BusinessException("Contas tipos poupança não pode ter cartão de credito");
 		}
 
 		return popularCartao(conta, cartaoDto);
@@ -146,10 +151,10 @@ public class CartaoService {
 				.orElseThrow(() -> new ResourceNotFoundException("Este cartão não existe"));
 
 		Conta conta = contaRepository.findByCartao(cartao)
-				.orElseThrow(() -> new ResourceNotFoundException("Esta cartão não esta vinculado a nenhuma conta"));
+				.orElseThrow(() -> new ResourceNotFoundException("Este cartão não esta vinculado a nenhuma conta"));
 
 		if (cartao.getTipoCartao() != TipoCartao.CREDITO) {
-			throw new ResourceNotFoundException("Esta operação é somente para alterar o limite do cartao de credito");
+			throw new BusinessException("Esta operação é somente para alterar o limite do cartao de credito");
 		}
 
 		cartao.getCartaoCredito().setLimite(limiteDto.limite());
@@ -168,7 +173,7 @@ public class CartaoService {
 				.orElseThrow(() -> new ResourceNotFoundException("Esta cartão não esta vinculado a nenhuma conta"));
 
 		if (cartao.getTipoCartao() != TipoCartao.DEBITO) {
-			throw new ResourceNotFoundException("Esta operação é somente para alterar o limite do cartao de debito");
+			throw new BusinessException("Esta operação é somente para alterar o limite do cartao de debito");
 		}
 
 		cartao.getCartaoDebito().setLimiteDiario(limiteDto.limite());
@@ -187,11 +192,11 @@ public class CartaoService {
 				.orElseThrow(() -> new ResourceNotFoundException("Esta cartão não esta vinculado a nenhuma conta"));
 
 		if (statusDto.status() == true && cartao.getAtivo() == true) {
-			throw new ResourceNotFoundException("Este cartão já esta ativo");
+			throw new BusinessException("Este cartão já esta ativo");
 		}
 
 		if (statusDto.status() == false && cartao.getAtivo() == false) {
-			throw new ResourceNotFoundException("Este cartão já esta inativo");
+			throw new BusinessException("Este cartão já esta inativo");
 		}
 
 		cartao.setAtivo(statusDto.status());
@@ -210,7 +215,7 @@ public class CartaoService {
 				.orElseThrow(() -> new ResourceNotFoundException("Esta cartão não esta vinculado a nenhuma conta"));
 
 		if (cartao.getSenha().equals(senhaDto.senha())) {
-			throw new ResourceNotFoundException("A nova senha deve ser diferente da antiga");
+			throw new BusinessException("A nova senha deve ser diferente da antiga");
 		}
 		;
 
@@ -238,7 +243,7 @@ public class CartaoService {
 				.orElse(BigDecimal.ZERO);
 
 		if (cartao.getTipoCartao() != TipoCartao.CREDITO) {
-			throw new ResourceNotFoundException("Somente cartões do tipo Credito tem fatura");
+			throw new BusinessException("Somente cartões do tipo Credito tem fatura");
 		}
 
 		return new FaturaDto(fatura);
@@ -253,7 +258,7 @@ public class CartaoService {
 				.orElseThrow(() -> new ResourceNotFoundException("Esta cartão não esta vinculado a nenhuma conta"));
 
 		if (historicoPagamentoRepository.existsByNumeroCod(pagamentoDto.numeroCod())) {
-			throw new ResourceNotFoundException(
+			throw new BusinessException(
 					"Esta conta foi paga ou esta em pedencia, aguarde o fechamento da fatura");
 		}
 
@@ -278,11 +283,11 @@ public class CartaoService {
 		
 	
 		if(limiteDiario.compareTo(pagamentosHoje.add(pagamentoDto.valor())) == -1) {
-			throw new ResourceNotFoundException("Vocâ atingiu o seu limite diario");
+			throw new BusinessException("Vocâ atingiu o seu limite diario");
 		}
 		
 		if(saldoSubatractPagamento.compareTo(BigDecimal.ZERO) == -1) {
-			throw new ResourceNotFoundException("Saldo insuficiente");
+			throw new BusinessException("Saldo insuficiente");
 		}
 		
 		HistoricoPagamento historicoPagamento = new HistoricoPagamento();
@@ -370,7 +375,7 @@ public class CartaoService {
 		BigDecimal limite = cartao.getCartaoCredito().getLimite();
 
 		if (limite.compareTo(valorFatura) == -1) {
-			throw new ResourceNotFoundException("Vocâ atingiu o seu limite");
+			throw new BusinessException("Vocâ atingiu o seu limite");
 		}
 
 		return valorFatura;
@@ -385,7 +390,7 @@ public class CartaoService {
 				.orElseThrow(() -> new ResourceNotFoundException("Esta cartão não esta vinculado a nenhuma conta"));
 
 		if(cartao.getTipoCartao() != TipoCartao.CREDITO) {
-			new ResourceNotFoundException("Somente cartão de creditos podem realizar esta ação");
+			new BusinessException("Somente cartão de creditos podem realizar esta ação");
 		}
 		
 		LocalDate hoje = LocalDate.of(2025, 12, 5);
