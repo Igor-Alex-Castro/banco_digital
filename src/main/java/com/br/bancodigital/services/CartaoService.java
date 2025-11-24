@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -373,5 +375,76 @@ public class CartaoService {
 
 		return valorFatura;
 
+	}
+	
+	public DetalhesCartaoDTO pagementoFaturaCredito(Long id) {
+		Cartao cartao = cartaoRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("Este cartão não existe"));
+
+		Conta conta = contaRepository.findByCartao(cartao)
+				.orElseThrow(() -> new ResourceNotFoundException("Esta cartão não esta vinculado a nenhuma conta"));
+
+		if(cartao.getTipoCartao() != TipoCartao.CREDITO) {
+			new ResourceNotFoundException("Somente cartão de creditos podem realizar esta ação");
+		}
+		
+		LocalDate hoje = LocalDate.of(2025, 12, 5);
+		
+		if(hoje.isBefore(cartao.getDataVigencia())) {
+			 throw new BusinessException("Cobrança não aplicada: ainda não atingiu a data de vigência.");
+		}
+		
+		LocalDate dataUltimoPagamento = cartao.getDataUltimoPagemento();
+		
+		LocalDate inicioCobranca = dataUltimoPagamento != null ? dataUltimoPagamento.plusMonths(1)
+				: conta.getDataVigencia();
+		
+		inicioCobranca = inicioCobranca.withDayOfMonth(5);
+		
+		LocalDate fimCobranca = hoje.getDayOfMonth() < 5
+				? hoje.withDayOfMonth(5).minusMonths(1) :
+					hoje.withDayOfMonth(5);
+		
+		if(inicioCobranca.isAfter(fimCobranca)) {
+			throw new BusinessException("Nenhum mês pendente de cobrança.");
+		}
+		
+		List<HistoricoPagamento> listaContasPagar = historicoPagamentoRepository.listaPagaentoCredito(TipoCartao.CREDITO, cartao.getId(),
+				inicioCobranca, fimCobranca);
+		
+		if(listaContasPagar.size() == 0) {
+			throw new BusinessException("A fatura deste mês já foi paga.");
+		}
+		
+		BigDecimal saldoAtual = conta.getSaldo() != null ? conta.getSaldo() : BigDecimal.ZERO;
+		BigDecimal fatura = conta.getCartao().getCartaoCredito().getFatura();
+		
+		if(fatura == null || fatura.compareTo(BigDecimal.ZERO) == -1 || fatura.compareTo(BigDecimal.ZERO) == 0 ) {
+			throw new BusinessException("Sem fatura");
+		}
+		
+		BigDecimal valorFaturaPaga = BigDecimal.ZERO;
+		
+		for (HistoricoPagamento historicoPagamento : listaContasPagar) {
+			saldoAtual = saldoAtual.subtract(historicoPagamento.getValor());
+			
+			valorFaturaPaga = valorFaturaPaga.add(historicoPagamento.getValor());
+					
+			historicoPagamento.setPaga(true);
+			
+			historicoPagamentoRepository.save(historicoPagamento);
+		}
+		
+		
+		
+		fatura = fatura.subtract(valorFaturaPaga);
+		cartao.getCartaoCredito().setFatura(fatura);
+		
+		conta.setDataUltimoPagemento(fimCobranca);
+
+		cartaoRepository.save(cartao);
+		contaRepository.save(conta);
+		
+		return new DetalhesCartaoDTO(conta, cartao);
 	}
 }

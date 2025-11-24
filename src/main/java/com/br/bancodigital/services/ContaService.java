@@ -541,6 +541,7 @@ public class ContaService {
 		}
 		
 		conta.setSaldo(saldoAtual);
+		
 	    conta.setDataUltimoPagemento(fimCobranca);
 	    contaRepository.save(conta);
 	    

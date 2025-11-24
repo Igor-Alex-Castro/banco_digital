@@ -141,4 +141,18 @@ public class CartaoController {
 		
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
+	
+	@PostMapping("/{id}/fatura/pagamento")
+	public ResponseEntity<ApiResponse<DetalhesCartaoDTO>> pagamentoFaturaCredito(@PathVariable @NotNull(message = "O ID do cartão é obrigatório") Long id){
+		
+		DetalhesCartaoDTO detalhesCartaoDTO = cartaoService.pagementoFaturaCredito(id);
+		 
+		ApiResponse<DetalhesCartaoDTO> response = new ApiResponse<>(
+				 HttpStatus.CREATED.value(),
+				 	"Pagamento realizado com sucesso",
+				 	detalhesCartaoDTO
+				 );
+		
+		return ResponseEntity.status(HttpStatus.CREATED).body(response);
+	}
 }
