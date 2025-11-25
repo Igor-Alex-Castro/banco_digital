@@ -2,6 +2,8 @@ package com.br.bancodigital.models;
 
 import java.time.LocalDate;
 
+import org.hibernate.annotations.Cascade;
+
 import com.br.bancodigital.enuns.TipoCartao;
 
 import jakarta.persistence.CascadeType;
@@ -14,7 +16,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -43,13 +44,15 @@ public class Cartao {
 	@Column( nullable = false, unique = true)
 	private String senha;
 
-	 @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-	 @JoinColumn(name = "credito_id", referencedColumnName = "id") private
-	 CartaoCredito cartaoCredito;
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name="conta_id", nullable = false, unique = true)
+	private Conta conta;
+	
+	 @OneToOne(mappedBy = "cartao", cascade = CascadeType.ALL, orphanRemoval = true)
+	 private CartaoCredito cartaoCredito;
 	 
 	
-	@OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-	@JoinColumn(name = "debito_id", referencedColumnName = "id")
+	@OneToOne(mappedBy = "cartao", cascade = CascadeType.ALL, orphanRemoval = true)
 	private CartaoDebito cartaoDebito;
 	
 	@Enumerated(EnumType.STRING) 

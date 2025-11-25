@@ -19,16 +19,24 @@ import com.br.bancodigital.dto.SenhaDto;
 import com.br.bancodigital.dto.StatusDto;
 import com.br.bancodigital.enuns.TipoCartao;
 import com.br.bancodigital.enuns.TipoConta;
+import com.br.bancodigital.enuns.TipoPix;
 import com.br.bancodigital.exceptions.BusinessException;
 import com.br.bancodigital.exceptions.ResourceNotFoundException;
 import com.br.bancodigital.models.Cartao;
 import com.br.bancodigital.models.CartaoCredito;
 import com.br.bancodigital.models.CartaoDebito;
+import com.br.bancodigital.models.Cliente;
 import com.br.bancodigital.models.Conta;
+import com.br.bancodigital.models.ContaCorrente;
+import com.br.bancodigital.models.ContaPoupanca;
 import com.br.bancodigital.models.HistoricoPagamento;
+import com.br.bancodigital.models.Manutencao;
 import com.br.bancodigital.repositories.CartaoRepository;
 import com.br.bancodigital.repositories.ContaRepository;
 import com.br.bancodigital.repositories.HistoricoPagamentoRepository;
+
+import jakarta.validation.constraints.NotNull;
+import lombok.Data;
 
 @Service
 public class CartaoService {
@@ -63,8 +71,8 @@ public class CartaoService {
 		if (cartaoRepository.existsBySenha(cartaoDto.senha())) {
 			throw new BusinessException("Já existe um cartão com esta senha");
 		}
-		
-		if(cartaoDto.tipoCartao() == TipoCartao.CREDITO && conta.getTipoConta() == TipoConta.POUPANCA) {
+
+		if (cartaoDto.tipoCartao() == TipoCartao.CREDITO && conta.getTipoConta() == TipoConta.POUPANCA) {
 			throw new BusinessException("Contas tipos poupança não pode ter cartão de credito");
 		}
 
@@ -108,10 +116,15 @@ public class CartaoService {
 		cartaoCredito.setLimite(cartaoDto.limite());
 		cartaoCredito.setFatura(cartaoDto.saldo());
 
+		cartaoCredito.setCartao(cartao);
+		
 		cartao.setCartaoCredito(cartaoCredito);
 
+		cartao.setConta(conta);
+		
 		conta.setCartao(cartao);
 
+		cartaoRepository.save(cartao);
 		contaRepository.save(conta);
 
 		return cartao;
@@ -123,12 +136,21 @@ public class CartaoService {
 
 		cartaoDebito.setLimiteDiario(cartaoDto.limite());
 
+		cartaoDebito.setCartao(cartao);
+		
+		
 		cartao.setCartaoDebito(cartaoDebito);
+		///cartaoRepository.save(cartao);
+
+		cartao.setConta(conta);
 
 		conta.setCartao(cartao);
+		//cartao.setConta(conta);
 
+		
+		cartaoRepository.save(cartao);
 		contaRepository.save(conta);
-
+		
 		return cartao;
 
 	}
@@ -258,38 +280,36 @@ public class CartaoService {
 				.orElseThrow(() -> new ResourceNotFoundException("Esta cartão não esta vinculado a nenhuma conta"));
 
 		if (historicoPagamentoRepository.existsByNumeroCod(pagamentoDto.numeroCod())) {
-			throw new BusinessException(
-					"Esta conta foi paga ou esta em pedencia, aguarde o fechamento da fatura");
+			throw new BusinessException("Esta conta foi paga ou esta em pedencia, aguarde o fechamento da fatura");
 		}
 
 		if (cartao.getTipoCartao() == TipoCartao.CREDITO) {
-			pagaContaCartaoCredito(conta, cartao, 	pagamentoDto);
-		}else{
-			
-			pagaContaCartaoDebito(conta, cartao, 	pagamentoDto);
+			pagaContaCartaoCredito(conta, cartao, pagamentoDto);
+		} else {
+
+			pagaContaCartaoDebito(conta, cartao, pagamentoDto);
 		}
 		return new DetalhesCartaoDTO(conta, cartao);
 	}
 
 	private void pagaContaCartaoDebito(Conta conta, Cartao cartao, PagamentoDto pagamentoDto) {
 		BigDecimal limiteDiario = cartao.getCartaoDebito().getLimiteDiario();
-		
-		BigDecimal saldoAtual = conta.getSaldo() == null ? BigDecimal.ZERO : conta.getSaldo() ;
-		
+
+		BigDecimal saldoAtual = conta.getSaldo() == null ? BigDecimal.ZERO : conta.getSaldo();
+
 		BigDecimal saldoSubatractPagamento = saldoAtual.subtract(pagamentoDto.valor());
-		
-		BigDecimal pagamentosHoje = historicoPagamentoRepository.limiteDiarioPorCartaoDebito(cartao.getId(), LocalDate.now())
-				.orElse(BigDecimal.ZERO);
-		
-	
-		if(limiteDiario.compareTo(pagamentosHoje.add(pagamentoDto.valor())) == -1) {
+
+		BigDecimal pagamentosHoje = historicoPagamentoRepository
+				.limiteDiarioPorCartaoDebito(cartao.getId(), LocalDate.now()).orElse(BigDecimal.ZERO);
+
+		if (limiteDiario.compareTo(pagamentosHoje.add(pagamentoDto.valor())) == -1) {
 			throw new BusinessException("Vocâ atingiu o seu limite diario");
 		}
-		
-		if(saldoSubatractPagamento.compareTo(BigDecimal.ZERO) == -1) {
+
+		if (saldoSubatractPagamento.compareTo(BigDecimal.ZERO) == -1) {
 			throw new BusinessException("Saldo insuficiente");
 		}
-		
+
 		HistoricoPagamento historicoPagamento = new HistoricoPagamento();
 		historicoPagamento.setConta(conta);
 		historicoPagamento.setValor(pagamentoDto.valor());
@@ -299,40 +319,35 @@ public class CartaoService {
 		historicoPagamento.setPaga(true);
 		historicoPagamento.setParcelaAtual("NENHUMA");
 		historicoPagamento.setTipoCartao(TipoCartao.DEBITO);
-		
+
 		historicoPagamentoRepository.save(historicoPagamento);
-		
-		conta.setSaldo( saldoSubatractPagamento);
-		
+
+		conta.setSaldo(saldoSubatractPagamento);
+
 		contaRepository.save(conta);
 	}
 
-		
-	
-
 	private void pagaContaCartaoCredito(Conta conta, Cartao cartao, PagamentoDto pagamentoDto) {
-		BigDecimal faturaAtualizada = verificaUltrapassouLimiteMes(cartao, pagamentoDto.valor() );
-		
-		
-			if(pagamentoDto.numeroParcela() == null  || pagamentoDto.numeroParcela() == 0  ) {
-				pagarSemParcela(conta, pagamentoDto );
-				
-			}else {
-				
-				pagarComParcela(conta, pagamentoDto);
-			}
-			
+		BigDecimal faturaAtualizada = verificaUltrapassouLimiteMes(cartao, pagamentoDto.valor());
 
-			
-			cartao.getCartaoCredito().setFatura(faturaAtualizada);
-			
-			cartaoRepository.save(cartao);
-		
+		if (pagamentoDto.numeroParcela() == null || pagamentoDto.numeroParcela() == 0) {
+			pagarSemParcela(conta, pagamentoDto);
+
+		} else {
+
+			pagarComParcela(conta, pagamentoDto);
+		}
+
+		cartao.getCartaoCredito().setFatura(faturaAtualizada);
+
+		cartaoRepository.save(cartao);
+
 	}
 
 	private void pagarComParcela(Conta conta, PagamentoDto pagamentoDto) {
-		BigDecimal valorParcela =  pagamentoDto.valor().divide( BigDecimal.valueOf(pagamentoDto.numeroParcela()), 2, RoundingMode.HALF_UP); 
-		
+		BigDecimal valorParcela = pagamentoDto.valor().divide(BigDecimal.valueOf(pagamentoDto.numeroParcela()), 2,
+				RoundingMode.HALF_UP);
+
 		for (int i = 1; i <= pagamentoDto.numeroParcela(); i++) {
 			HistoricoPagamento historicoPagamento = new HistoricoPagamento();
 			historicoPagamento.setConta(conta);
@@ -345,10 +360,10 @@ public class CartaoService {
 			historicoPagamento.setTipoCartao(TipoCartao.CREDITO);
 			historicoPagamentoRepository.save(historicoPagamento);
 		}
-		
+
 	}
 
-	private void pagarSemParcela(Conta conta, PagamentoDto pagamentoDto ) {
+	private void pagarSemParcela(Conta conta, PagamentoDto pagamentoDto) {
 		HistoricoPagamento historicoPagamento = new HistoricoPagamento();
 		historicoPagamento.setConta(conta);
 		historicoPagamento.setValor(pagamentoDto.valor());
@@ -358,9 +373,9 @@ public class CartaoService {
 		historicoPagamento.setPaga(false);
 		historicoPagamento.setParcelaAtual("NENHUMA");
 		historicoPagamento.setTipoCartao(TipoCartao.CREDITO);
-		
+
 		historicoPagamentoRepository.save(historicoPagamento);
-		
+
 	}
 
 	private BigDecimal verificaUltrapassouLimiteMes(Cartao cartao, BigDecimal valor) {
@@ -381,7 +396,7 @@ public class CartaoService {
 		return valorFatura;
 
 	}
-	
+
 	public DetalhesCartaoDTO pagementoFaturaCredito(Long id) {
 		Cartao cartao = cartaoRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Este cartão não existe"));
@@ -389,67 +404,71 @@ public class CartaoService {
 		Conta conta = contaRepository.findByCartao(cartao)
 				.orElseThrow(() -> new ResourceNotFoundException("Esta cartão não esta vinculado a nenhuma conta"));
 
-		if(cartao.getTipoCartao() != TipoCartao.CREDITO) {
+		if (cartao.getTipoCartao() != TipoCartao.CREDITO) {
 			new BusinessException("Somente cartão de creditos podem realizar esta ação");
 		}
-		
+
 		LocalDate hoje = LocalDate.of(2025, 12, 5);
-		
-		if(hoje.isBefore(cartao.getDataVigencia())) {
-			 throw new BusinessException("Cobrança não aplicada: ainda não atingiu a data de vigência.");
+
+		if (hoje.isBefore(cartao.getDataVigencia())) {
+			throw new BusinessException("Cobrança não aplicada: ainda não atingiu a data de vigência.");
 		}
-		
+
 		LocalDate dataUltimoPagamento = cartao.getDataUltimoPagemento();
-		
+
 		LocalDate inicioCobranca = dataUltimoPagamento != null ? dataUltimoPagamento.plusMonths(1)
 				: conta.getDataVigencia();
-		
+
 		inicioCobranca = inicioCobranca.withDayOfMonth(5);
-		
-		LocalDate fimCobranca = hoje.getDayOfMonth() < 5
-				? hoje.withDayOfMonth(5).minusMonths(1) :
-					hoje.withDayOfMonth(5);
-		
-		if(inicioCobranca.isAfter(fimCobranca)) {
+
+		LocalDate fimCobranca = hoje.getDayOfMonth() < 5 ? hoje.withDayOfMonth(5).minusMonths(1)
+				: hoje.withDayOfMonth(5);
+
+		if (inicioCobranca.isAfter(fimCobranca)) {
 			throw new BusinessException("Nenhum mês pendente de cobrança.");
 		}
-		
-		List<HistoricoPagamento> listaContasPagar = historicoPagamentoRepository.listaPagaentoCredito(TipoCartao.CREDITO, cartao.getId(),
-				inicioCobranca, fimCobranca);
-		
-		if(listaContasPagar.size() == 0) {
+
+		List<HistoricoPagamento> listaContasPagar = historicoPagamentoRepository
+				.listaPagaentoCredito(TipoCartao.CREDITO, cartao.getId(), inicioCobranca, fimCobranca);
+
+		if (listaContasPagar.size() == 0) {
 			throw new BusinessException("A fatura deste mês já foi paga.");
 		}
-		
+
 		BigDecimal saldoAtual = conta.getSaldo() != null ? conta.getSaldo() : BigDecimal.ZERO;
 		BigDecimal fatura = conta.getCartao().getCartaoCredito().getFatura();
-		
-		if(fatura == null || fatura.compareTo(BigDecimal.ZERO) == -1 || fatura.compareTo(BigDecimal.ZERO) == 0 ) {
+
+		if (fatura == null || fatura.compareTo(BigDecimal.ZERO) == -1 || fatura.compareTo(BigDecimal.ZERO) == 0) {
 			throw new BusinessException("Sem fatura");
 		}
-		
+
 		BigDecimal valorFaturaPaga = BigDecimal.ZERO;
-		
+
 		for (HistoricoPagamento historicoPagamento : listaContasPagar) {
 			saldoAtual = saldoAtual.subtract(historicoPagamento.getValor());
-			
+
 			valorFaturaPaga = valorFaturaPaga.add(historicoPagamento.getValor());
-					
+
 			historicoPagamento.setPaga(true);
-			
+
 			historicoPagamentoRepository.save(historicoPagamento);
 		}
-		
-		
-		
+
 		fatura = fatura.subtract(valorFaturaPaga);
 		cartao.getCartaoCredito().setFatura(fatura);
-		
+
 		conta.setDataUltimoPagemento(fimCobranca);
 
 		cartaoRepository.save(cartao);
 		contaRepository.save(conta);
-		
+
 		return new DetalhesCartaoDTO(conta, cartao);
+	}
+
+	public void deletePorId(Long id) {
+		// TODO Auto-generated method stub
+		cartaoRepository.findById(id).orElseThrow(() -> new BusinessException("Não tem essa cartao na base"));
+
+		cartaoRepository.deleteById(id);
 	}
 }

@@ -1,16 +1,14 @@
 package com.br.bancodigital.models;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-
-import com.br.bancodigital.enuns.TipoCliente;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -33,5 +31,11 @@ public class CartaoCredito {
 	
 	@Column(nullable = true, columnDefinition = "NUMERIC(10,2)")
 	private BigDecimal fatura;
+	
+	@OneToOne
+	@JoinColumn(name = "cartao_id", nullable = false, unique = true)
+	private Cartao cartao;
+	
+	
 	
 }

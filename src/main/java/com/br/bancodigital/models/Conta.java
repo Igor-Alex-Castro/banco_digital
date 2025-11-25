@@ -90,15 +90,13 @@ public class Conta {
 	
 	private LocalDate dataUltimoPagemento;
 	
-	@OneToMany(mappedBy = "conta", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "conta", cascade = { CascadeType.MERGE }, orphanRemoval = false)
 	private List<Manutencao> manutencoes;
 	
 	//@OneToOne(mappedBy = "conta", cascade = CascadeType.ALL,  orphanRemoval = true)
-	@OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-	@JoinColumn(name = "cartao_id", referencedColumnName = "id")
+	@OneToOne( mappedBy = "conta", fetch = FetchType.LAZY)
 	private Cartao cartao;
 	
-	@OneToMany(mappedBy = "conta", cascade = CascadeType.ALL, orphanRemoval = true)
-	
+	@OneToMany(mappedBy = "conta", cascade = { CascadeType.MERGE }, orphanRemoval = false)
 	private List<HistoricoPagamento> historicoPagamentos;
 }

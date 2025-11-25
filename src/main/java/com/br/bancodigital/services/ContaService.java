@@ -178,9 +178,15 @@ public class ContaService {
 
 	public void deletePorId(Long id) {
 		// TODO Auto-generated method stub
+		
+		try {
 		contaRepository.findById(id).orElseThrow(() -> new BusinessException("Não tem essa conta na base"));
-
 		contaRepository.deleteById(id);
+		}catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			throw new BusinessException("Não pode cancelar essa conta pois existe um cartão associado a ela");
+		}
 	}
 
 	public ContaDto transferencia(Long contaId, TransferenciaDTO transferenciaDTO) {

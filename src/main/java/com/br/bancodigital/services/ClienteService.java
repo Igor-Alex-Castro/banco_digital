@@ -102,10 +102,20 @@ public class ClienteService {
 
 	public Cliente deletePorId(@NotNull(message = "O ID do cliente é obrigatório") Long id) {
 		// TODO Auto-generated method stub
+		Cliente cliente = null;
+		try {
+			
+			cliente = clienteRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Este cliente não existe"));
+			clienteRepository.deleteById(id);
+			
 		
-		Cliente cliente = clienteRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Este cliente não existe"));
-		clienteRepository.deleteById(id);
+		}catch (Exception e) {
+			e.printStackTrace();
+			throw new  BusinessException("Existe contas associadas a este cliente.");
+		}
+		
 		return cliente;
+		
 	}
 
 	public List<ClienteDto> listarCliente() {

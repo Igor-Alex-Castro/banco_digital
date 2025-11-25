@@ -16,12 +16,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.br.bancodigital.dto.ApiResponse;
-import com.br.bancodigital.dto.ClienteDto;
 import com.br.bancodigital.dto.ContaDto;
 import com.br.bancodigital.dto.OperacoesDto;
 import com.br.bancodigital.dto.SalvarChavePixDto;
 import com.br.bancodigital.dto.TransferenciaDTO;
-import com.br.bancodigital.models.Cliente;
 import com.br.bancodigital.models.Conta;
 import com.br.bancodigital.services.ContaService;
 
@@ -46,7 +44,7 @@ public class ContaController {
 		 
 		
 		 ApiResponse<ContaDto> response = new ApiResponse<>(
-		 HttpStatus.CREATED.value(), "Cliente criado com sucesso", new
+		 HttpStatus.CREATED.value(), "Conta criado com sucesso", new
 		 ContaDto(contaCriada) );
 		 
 		
@@ -205,11 +203,7 @@ public class ContaController {
 		
 	    contaService.deletePorId(id);
 		
-		ApiResponse<Void> response = new ApiResponse<Void>(
-				 HttpStatus.NO_CONTENT.value(),
-				 	"Cliente excluído com sucesso",
-				 	null
-				 );
+	
 		
 	     return ResponseEntity.noContent().build();
 	}
@@ -260,6 +254,7 @@ public class ContaController {
 		
 		return ResponseEntity.ok( response);
 	}
+	
 	
 	
 
