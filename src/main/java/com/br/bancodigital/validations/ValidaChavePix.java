@@ -1,5 +1,5 @@
-package com.br.bancodigital.validations;
 
+package com.br.bancodigital.validations;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

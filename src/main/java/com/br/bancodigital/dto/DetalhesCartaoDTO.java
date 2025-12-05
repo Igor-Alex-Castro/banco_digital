@@ -49,8 +49,8 @@ public record DetalhesCartaoDTO(
 				cartao.getTipoCartao(),
 				 cartao.getTipoCartao() == TipoCartao.DEBITO ? cartao.getCartaoDebito().getLimiteDiario()
 					 : cartao.getCartaoCredito().getLimite(),
-					 cartao.getTipoCartao() == TipoCartao.DEBITO ? conta.getSaldo() :
-						 cartao.getCartaoCredito().getFatura()
+					  conta.getSaldo() 
+					
 					 
 					 
 				);

@@ -70,6 +70,7 @@ public class ContaService {
 			conta.setContaCorrente(salvarContaTipoCorrente(cliente, conta));
 		}
 		
+		conta.setSaldo(new BigDecimal("1000"));
 		contaRepository.save(conta);
 
 		return conta;
@@ -185,7 +186,7 @@ public class ContaService {
 		}catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
-			throw new BusinessException("Não pode cancelar essa conta pois existe um cartão associado a ela");
+			throw new BusinessException("Não pode cancelar essa conta pois existe um cartão associado a ela ou já possui histórico.   ");
 		}
 	}
 
@@ -420,7 +421,7 @@ public class ContaService {
 			BigDecimal valorConta = conta.getSaldo();
 			BigDecimal valorFinal = valorConta.subtract(valor);
 			
-			if(valorFinal.compareTo(valor) == -1 ) {
+			if(valorFinal.compareTo(BigDecimal.ZERO) == -1 ) {
 				throw new BusinessException("saldo insuficiente");
 			}
 			conta.setSaldo(valorFinal);
