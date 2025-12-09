@@ -100,12 +100,14 @@ public class ClienteService {
 		return clienteRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Este cliente não existe"));
 	}
 
-	public Cliente deletePorId(@NotNull(message = "O ID do cliente é obrigatório") Long id) {
+	public void deletePorId(@NotNull(message = "O ID do cliente é obrigatório") Long id) {
 		// TODO Auto-generated method stub
-		Cliente cliente = null;
+		
+		clienteRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Este cliente não existe"));
 		try {
 			
-			cliente = clienteRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Este cliente não existe"));
+			
+			
 			clienteRepository.deleteById(id);
 			
 		
@@ -114,7 +116,7 @@ public class ClienteService {
 			throw new  BusinessException("Existe contas associadas a este cliente.");
 		}
 		
-		return cliente;
+		
 		
 	}
 
